@@ -1,34 +1,24 @@
-import axios from "axios"
-import { useState, useEffect } from "react"
+import { Routes, Route, Navigate } from "react-router-dom";
+import Login from "./routes/login";
+import Register from "./routes/register";
+import NotFound from "./routes/NotFound";
 
-function App() {
-  const [array, setArray] = useState([])
-
-  const fetchData = async () => {
-    const response = await axios.get("http://localhost:8080")
-    setArray(response.data.blogPost)
-  }
-
-  useEffect(() => {
-    fetchData()
-  }, [])
-
+const App  = () => {
   return (
-    <div className="min-h-screen w-full bg-gray-100 flex items-center justify-center flex-col gap-10">
-      <h1 className="text-5xl font-bold text-gray-800">Prueba de funcionamiento de Tailwindcss</h1>
+    <>
+      <Routes>
+        <Route>
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/notfound" element={<NotFound />} />
+        </Route>
 
-    <ul className="rounded-2xl shadow-lg p-5 bg-white space-y-3">
-    {
-      array.map((blog,index) => (
-        <li key={index} className="bg-sky-100 p-4 rounded-2xl transition-transform transform hover:scale-105">
-          <p className="text-xl font-semibold text-gray-800">{blog.title}</p>
-          <p className="text-sm text-gray-600">{blog.content}</p>
-        </li>
-      ))
-    }
-    </ul>
-    </div>
-  )
+          <Route path="/" element={<Navigate to="/login" />} />
+
+          <Route path="*" element={<NotFound />} />
+      </Routes>
+    </>
+  );
 }
 
-export default App
+export default App;
