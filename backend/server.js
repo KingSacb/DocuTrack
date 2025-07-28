@@ -1,28 +1,12 @@
-import express from "express"
-import cors from "cors"
-const app = express()
+import "dotenv/config"
+import express from "express";
 
-const corsOptions = {
-    origin: ["http://localhost:5173"]
-}
-
-app.use(cors(corsOptions))
+const app = express();
 
 app.get("/", (req, res) => {
-    res.json({
-        blogPost:[
-            {
-                title: "Este es una prueba",
-                content:"El objetivo de esta prueba es comprobar que esta llegando informacion del backend al frontend."
-            },
-            {
-                title: "Funciona el backend",
-                content:"La conexion con del Backend y el Frontend funciona correctamente."
-            }
-        ]
-    })
-})
+  res.send("Hola mundo");
+});
 
-app.listen(8080, () => {
-    console.log("El servidor arranca en el puerto 8080")
-})
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => console.log("Servidor andando en " + PORT))
