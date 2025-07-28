@@ -1,12 +1,16 @@
-import "dotenv/config"
+import "dotenv/config";
 import express from "express";
+
+import userRouter from "./routes/user.route.js";
 
 const app = express();
 
-app.get("/", (req, res) => {
-  res.send("Hola mundo");
-});
+app.use(express.json());
+
+app.use(express.urlencoded({ extended: true }));
+
+app.use("/api/v1/users", userRouter);
 
 const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, () => console.log("Servidor andando en " + PORT))
+app.listen(PORT, () => console.log("Servidor andando en " + PORT));
