@@ -58,11 +58,16 @@ const register = async (req, res) => {
       email,
       password: hashedPassword,
       username,
+      role: "USER"
     });
 
     // Crear token
     const token = jwt.sign(
-      { email: newUser.email },
+      { 
+        uid: newUser.uid,
+        email: newUser.email,
+        role: newUser.role,
+      },
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );
@@ -120,10 +125,15 @@ const login = async (req, res) => {
 
     // Generar token
     const token = jwt.sign(
-      { email: user.email },
+      { 
+        uid: user.uid,
+        email: user.email,
+        role: user.role, 
+      },
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );
+    console.log(token)
 
     return res.status(200).json({ ok: true, msg: token });
   } catch (error) {
