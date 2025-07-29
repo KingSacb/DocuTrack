@@ -7,32 +7,64 @@ const register = async (req, res) => {
   try {
     const { username, email, password } = req.body;
 
+    // Validar existencia de los campos
     if (!username || !email || !password) {
       return res.status(400).json({
         ok: false,
-        msg: "Missing required fields: email, password, username",
+        msg: "Todos los campos son obligatorios: email, username y password",
       });
     }
 
-    const user = await UserModel.findOneByEmail(email);
-    if (user) {
-      return res.status(409).json({ ok: false, msg: "Email already exists" });
+    // Validar formato de email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({
+        ok: false,
+        msg: "Formato de correo electrónico inválido",
+      });
     }
 
+    // Validar longitud de password
+    if (password.length < 6) {
+      return res.status(400).json({
+        ok: false,
+        msg: "La contraseña debe tener al menos 6 caracteres",
+      });
+    }
+
+    // Validar longitud de username
+    if (username.length < 3) {
+      return res.status(400).json({
+        ok: false,
+        msg: "El nombre de usuario debe tener al menos 3 caracteres",
+      });
+    }
+
+    // Verificar si ya existe el usuario
+    const existingUser = await UserModel.findOneByEmail(email);
+    if (existingUser) {
+      return res.status(409).json({
+        ok: false,
+        msg: "Este correo ya está registrado",
+      });
+    }
+
+    // Hashear la contraseña
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
+    // Crear el nuevo usuario
     const newUser = await UserModel.create({
       email,
       password: hashedPassword,
       username,
     });
 
-    const token = jwt.sign({email: newUser.email},
+    // Crear token
+    const token = jwt.sign(
+      { email: newUser.email },
       process.env.JWT_SECRET,
-      {
-        expiresIn: "1h",
-      }
+      { expiresIn: "1h" }
     );
 
     return res.status(201).json({ ok: true, msg: token });
@@ -40,44 +72,65 @@ const register = async (req, res) => {
     console.log(error);
     return res.status(500).json({
       ok: false,
-      msg: "Error server",
+      msg: "Error en el servidor",
     });
   }
 };
 
+
 // /api/v1/users/login
 const login = async (req, res) => {
   try {
+    const { email, password } = req.body;
 
-    const {email, password} = req.body
-
-    if(!email || !password){
-      return res.status(400).json({error:"Missing required fields: email, password"})
+    // Validar existencia de campos
+    if (!email || !password) {
+      return res.status(400).json({
+        ok: false,
+        msg: "Correo y contraseña son obligatorios",
+      });
     }
 
-    const user = await UserModel.findOneByEmail(email)
-    if(!user){
-      return res.status(404).json({error:"User not found"})
+    // Validar formato de email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({
+        ok: false,
+        msg: "Correo electrónico inválido",
+      });
     }
 
-    const isMatch = await bcrypt.compare(password, user.password)
-
-    if(!isMatch){
-      return res.status(404).json({error:"Invalid credentials"})
+    // Buscar usuario
+    const user = await UserModel.findOneByEmail(email);
+    if (!user) {
+      return res.status(404).json({
+        ok: false,
+        msg: "Usuario no encontrado",
+      });
     }
 
-     const token = jwt.sign({email: user.email},
+    // Comparar contraseñas
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({
+        ok: false,
+        msg: "Credenciales incorrectas",
+      });
+    }
+
+    // Generar token
+    const token = jwt.sign(
+      { email: user.email },
       process.env.JWT_SECRET,
-      {
-        expiresIn: "1h",
-      }
+      { expiresIn: "1h" }
     );
-    return res.json({ ok: true, msg: token });
+
+    return res.status(200).json({ ok: true, msg: token });
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return res.status(500).json({
       ok: false,
-      msg: "Error server",
+      msg: "Error en el servidor",
     });
   }
 };
