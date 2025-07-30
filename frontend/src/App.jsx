@@ -6,6 +6,7 @@ import AdminDashboard from "./routes/admindashboard"
 import NotFound from "./routes/NotFound";
 import Unauthorized from "./routes/unauthorized"
 import PrivateRoute from "./components/PrivateRoute";
+import RequestForm from "./routes/requestform";
 
 const App = () => (
   <Routes>
@@ -14,6 +15,14 @@ const App = () => (
       element={
         <PrivateRoute allowedRoles={["USER"]}>
           <Profile />
+        </PrivateRoute>
+      }
+    />
+    <Route
+      path="/requestform"
+      element={
+        <PrivateRoute allowedRoles={["USER"]}>
+          <RequestForm />
         </PrivateRoute>
       }
     />

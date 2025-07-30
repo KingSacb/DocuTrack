@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../api/axios";
+import { Link } from "react-router-dom";
 
 const Profile = () => {
   const [user, setUser] = useState(null);
@@ -45,6 +46,12 @@ const Profile = () => {
             >
               Cerrar sesión
             </button>
+            <Link
+              to="/requestform"
+              className="text-blue-600 hover:underline mt-4 block"
+            >
+              Solicitar Certificado
+            </Link>
           </>
         ) : (
           <p>Cargando perfil...</p>

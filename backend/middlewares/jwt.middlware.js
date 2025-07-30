@@ -1,24 +1,23 @@
-import jwt from "jsonwebtoken"
+import jwt from "jsonwebtoken";
 
 export const verifyToken = (req, res, next) => {
+  let token = req.headers.authorization;
 
-    let token = req.headers.authorization
+  if (!token) {
+    return res.status(401).json({ error: "Token not provided" });
+  }
 
-    if(!token){
-        return res.status(401).json({error: "Token not provided"})
-    }
+  token = token.split(" ")[1];
 
-    
-    token = token.split(" ")[1]
-    console.log({token})
+  try {
+    const { uid, email, role } = jwt.verify(token, process.env.JWT_SECRET);
 
-    try {
-        
-       const {email} = jwt.verify(token, process.env.JWT_SECRET)
-       req.email = email
-       next()
-    } catch (error) {
-        return res.status(401).json({error: "Invalid token"})
-    }
+    req.uid = uid;
+    req.email = email;
+    req.role = role;
 
-}
+    next();
+  } catch (error) {
+    return res.status(401).json({ error: "Invalid token" });
+  }
+};
