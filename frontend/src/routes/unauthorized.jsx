@@ -14,7 +14,7 @@ const Unauthorized = () => {
           Acceso no autorizado
         </h1>
         <p className="text-gray-700 mb-6">
-          No tienes permiso para ver esta página.
+          Usted no tienes permiso para ver esta página.
         </p>
         <button
           onClick={handleGoBack}
