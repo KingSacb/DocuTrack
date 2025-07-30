@@ -6,5 +6,6 @@ import { upload } from "../middlewares/upload.middleware.js";
 const router = Router();
 
 router.post("/", verifyToken, upload.single("file"), RequestController.createRequest);
+router.get("/", verifyToken, RequestController.getUserRequests);
 
 export default router;

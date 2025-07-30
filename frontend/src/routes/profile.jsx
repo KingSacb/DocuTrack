@@ -1,30 +1,35 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import API from "../api/axios";
-import { Link } from "react-router-dom";
 
 const Profile = () => {
   const [user, setUser] = useState(null);
+  const [requests, setRequests] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const getProfile = async () => {
+    const fetchProfileAndRequests = async () => {
       try {
-        const response = await API.get("/users/profile");
-        setUser(response.data.msg);
+        const profileResponse = await API.get("/users/profile");
+        setUser(profileResponse.data.msg);
+
+        const requestsResponse = await API.get("/requests");
+        setRequests(requestsResponse.data.data || []);
+        console.log("Solicitudes recibidas:", requestsResponse.data.data);
       } catch (error) {
         console.error(
-          "Error al obtener perfil:",
+          "Error al obtener datos:",
           error.response?.data || error.message
         );
         alert(
           "Sesión expirada o no autorizada. Por favor inicia sesión nuevamente."
         );
+        localStorage.removeItem("token");
         navigate("/login");
       }
     };
 
-    getProfile();
+    fetchProfileAndRequests();
   }, [navigate]);
 
   const handleLogout = () => {
@@ -33,28 +38,72 @@ const Profile = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white p-8 rounded shadow-md w-full max-w-md text-center">
-        <h1 className="text-2xl font-bold mb-4 text-gray-800">Perfil</h1>
+    <div className="min-h-screen bg-gray-100 py-10">
+      <div className="max-w-3xl mx-auto bg-white p-8 rounded shadow-md">
+        <h1 className="text-3xl font-bold text-center mb-6 text-gray-800">
+          Perfil de Usuario
+        </h1>
+
         {user ? (
           <>
-            <p className="mb-2">Correo: {user.email}</p>
-            <p className="mb-4">Usuario: {user.username}</p>
-            <button
-              onClick={handleLogout}
-              className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
-            >
-              Cerrar sesión
-            </button>
-            <Link
-              to="/requestform"
-              className="text-blue-600 hover:underline mt-4 block"
-            >
-              Solicitar Certificado
-            </Link>
+            <div className="text-center mb-6">
+              <p>
+                <strong>Correo:</strong> {user.email}
+              </p>
+              <p>
+                <strong>Usuario:</strong> {user.username}
+              </p>
+              <div className="mt-4 space-x-4">
+                <Link
+                  to="/requestform"
+                  className="text-blue-600 hover:underline"
+                >
+                  Solicitar Certificado
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="text-red-600 hover:underline"
+                >
+                  Cerrar sesión
+                </button>
+              </div>
+            </div>
+
+            <h2 className="text-xl font-semibold mb-4 text-gray-700">
+              Mis Solicitudes
+            </h2>
+            {requests.length === 0 ? (
+              <p className="text-gray-600">
+                Aún no has realizado ninguna solicitud.
+              </p>
+            ) : (
+              <ul className="mt-4 space-y-2">
+                {requests.map((req) => (
+                  <li key={req.id} className="bg-gray-100 p-4 rounded shadow">
+                    <p>
+                      <strong>Motivo:</strong> {req.reason}
+                    </p>
+                    <p>
+                      <strong>Estado:</strong> {req.status}
+                    </p>
+                    <p>
+                      <strong>Fecha solicitado:</strong>{" "}
+                      {new Date(req.created_at).toLocaleString("es-PA", {
+                        timeZone: "America/Panama",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                      })}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            )}
           </>
         ) : (
-          <p>Cargando perfil...</p>
+          <p className="text-center">Cargando perfil...</p>
         )}
       </div>
     </div>

@@ -8,10 +8,12 @@ const RequestForm = () => {
     documentId: "",
     birthDate: "",
     gender: "",
+    reason: "",
     file: null,
   });
 
   const [message, setMessage] = useState("");
+  const [reason, setReason] = useState("");
 
   const handleChange = (e) => {
     const { name, value, type, files } = e.target;
@@ -30,6 +32,7 @@ const RequestForm = () => {
     data.append("document_type", `Cédula: ${formData.documentId}`);
     data.append("birth_date", formData.birthDate);
     data.append("gender", formData.gender);
+    data.append("reason", reason);
     data.append("file", formData.file);
 
     try {
@@ -40,7 +43,7 @@ const RequestForm = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-      console.log(response)
+      console.log(response);
 
       setMessage("Solicitud enviada con éxito.");
     } catch (error) {
@@ -60,7 +63,9 @@ const RequestForm = () => {
           Solicitud de Certificado
         </h2>
 
-        {message && <p className="text-center text-sm text-blue-600">{message}</p>}
+        {message && (
+          <p className="text-center text-sm text-blue-600">{message}</p>
+        )}
 
         <input
           type="text"
@@ -113,7 +118,17 @@ const RequestForm = () => {
           <option value="Femenino">Femenino</option>
           <option value="Otro">Otro</option>
         </select>
-
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            Motivo de la solicitud
+          </label>
+          <textarea
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            className="mt-1 block w-full border border-gray-300 rounded px-3 py-2 shadow-sm"
+            rows={3}
+          />
+        </div>
         <input
           type="file"
           name="file"
@@ -135,5 +150,3 @@ const RequestForm = () => {
 };
 
 export default RequestForm;
-
-
