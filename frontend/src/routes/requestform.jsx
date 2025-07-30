@@ -31,7 +31,7 @@ const RequestForm = () => {
 
     const data = new FormData();
     data.append("full_name", `${formData.firstName} ${formData.lastName}`);
-    data.append("document_type", `Cédula: ${formData.documentId}`);
+    data.append("document_type", `${formData.documentId}`);
     data.append("birth_date", formData.birthDate);
     data.append("gender", formData.gender);
     data.append("reason", reason);

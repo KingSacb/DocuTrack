@@ -1,5 +1,6 @@
 import { RequestModel } from "../models/request.model.js";
 import { db } from "../database/connection.database.js";
+import { generateCertificatePDF } from "../utils/pdfGenerator.js";
 
 const createRequest = async (req, res) => {
   try {
@@ -51,20 +52,30 @@ export const getAllRequests = async (req, res) => {
   }
 };
 
-const updateRequestStatus = async (req, res) => {
-  const { status } = req.body;
+export const updateRequestStatus = async (req, res) => {
   const { id } = req.params;
-
-  if (!status) {
-    return res.status(400).json({ msg: "Estado requerido" });
-  }
+  const { status } = req.body;
 
   try {
-    await db.query("UPDATE requests SET status = $1 WHERE id = $2", [status, id]);
-    return res.json({ msg: "Estado actualizado correctamente" });
-  } catch (error) {
-    console.error("Error al actualizar estado:", error);
-    res.status(500).json({ msg: "Error al actualizar estado" });
+    const request = await RequestModel.findById(id);
+    if (!request) return res.status(404).json({ message: "Solicitud no encontrada" });
+
+    let certificate_url = request.certificate_url;
+
+    if (status === "Emitido") {
+      const pdfFileName = generateCertificatePDF(request);
+      certificate_url = `uploads/${pdfFileName}`;
+    }
+
+    await db.query(
+      "UPDATE requests SET status = $1, certificate_url = $2 WHERE id = $3",
+      [status, certificate_url, id]
+    );
+
+    res.json({ message: "Estado actualizado correctamente" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Error al actualizar solicitud" });
   }
 };
 

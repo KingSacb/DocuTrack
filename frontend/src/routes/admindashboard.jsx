@@ -42,30 +42,6 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleFileUpload = async (e, requestId) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const formData = new FormData();
-    formData.append("certificate", file);
-
-    try {
-      await API.post(`/requests/${requestId}/certificate`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-
-      alert("Certificado subido correctamente");
-
-      // Recargar solicitudes después de subir
-      fetchRequests();
-    } catch (error) {
-      console.error("Error al subir certificado:", error);
-      alert("Error al subir certificado");
-    }
-  };
-
   const handleLogout = () => {
     localStorage.removeItem("token");
     navigate("/login");
@@ -93,7 +69,6 @@ const AdminDashboard = () => {
               <th className="border px-4 py-2">Motivo</th>
               <th className="border px-4 py-2">Fecha</th>
               <th className="border px-4 py-2">Estado</th>
-              <th className="border px-4 py-2">Certificado</th>
               <th className="border px-4 py-2">Acciones</th>
             </tr>
           </thead>
@@ -106,17 +81,6 @@ const AdminDashboard = () => {
                   {new Date(req.created_at).toLocaleString()}
                 </td>
                 <td className="border px-4 py-2">{req.status}</td>
-                <td className="border px-4 py-2">
-                  {req.status === "Emitido" ? (
-                    <input
-                      type="file"
-                      accept="application/pdf"
-                      onChange={(e) => handleFileUpload(e, req.id)}
-                    />
-                  ) : (
-                    "-"
-                  )}
-                </td>
                 <td className="border px-4 py-2">
                   <button
                     className="bg-blue-500 text-white px-2 py-1 rounded"
