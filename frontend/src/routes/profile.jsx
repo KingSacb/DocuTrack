@@ -8,28 +8,28 @@ const Profile = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchProfileAndRequests = async () => {
+    const getProfile = async () => {
       try {
-        const profileResponse = await API.get("/users/profile");
-        setUser(profileResponse.data.msg);
-
-        const requestsResponse = await API.get("/requests");
-        setRequests(requestsResponse.data.data || []);
-        console.log("Solicitudes recibidas:", requestsResponse.data.data);
+        const response = await API.get("/users/profile");
+        setUser(response.data.msg);
       } catch (error) {
-        console.error(
-          "Error al obtener datos:",
-          error.response?.data || error.message
-        );
-        alert(
-          "Sesión expirada o no autorizada. Por favor inicia sesión nuevamente."
-        );
-        localStorage.removeItem("token");
+        console.error("Error al obtener perfil:", error);
+        alert("Sesión expirada o no autorizada");
         navigate("/login");
       }
     };
 
-    fetchProfileAndRequests();
+    const fetchRequests = async () => {
+      try {
+        const res = await API.get("/requests");
+        setRequests(res.data.data);
+      } catch (err) {
+        console.error("Error al obtener solicitudes:", err);
+      }
+    };
+
+    getProfile();
+    fetchRequests();
   }, [navigate]);
 
   const handleLogout = () => {
@@ -38,72 +38,87 @@ const Profile = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 py-10">
-      <div className="max-w-3xl mx-auto bg-white p-8 rounded shadow-md">
-        <h1 className="text-3xl font-bold text-center mb-6 text-gray-800">
+    <div className="min-h-screen bg-gray-100 p-6">
+      <div className="max-w-3xl mx-auto bg-white p-6 rounded shadow">
+        <h1 className="text-2xl font-bold mb-4 text-center">
           Perfil de Usuario
         </h1>
 
         {user ? (
-          <>
-            <div className="text-center mb-6">
-              <p>
-                <strong>Correo:</strong> {user.email}
-              </p>
-              <p>
-                <strong>Usuario:</strong> {user.username}
-              </p>
-              <div className="mt-4 space-x-4">
-                <Link
-                  to="/requestform"
-                  className="text-blue-600 hover:underline"
-                >
-                  Solicitar Certificado
-                </Link>
-                <button
-                  onClick={handleLogout}
-                  className="text-red-600 hover:underline"
-                >
-                  Cerrar sesión
-                </button>
-              </div>
-            </div>
+          <div className="mb-6">
+            <p>
+              <strong>Correo:</strong> {user.email}
+            </p>
+            <p>
+              <strong>Usuario:</strong> {user.username}
+            </p>
 
-            <h2 className="text-xl font-semibold mb-4 text-gray-700">
-              Mis Solicitudes
-            </h2>
-            {requests.length === 0 ? (
-              <p className="text-gray-600">
-                Aún no has realizado ninguna solicitud.
-              </p>
-            ) : (
-              <ul className="mt-4 space-y-2">
-                {requests.map((req) => (
-                  <li key={req.id} className="bg-gray-100 p-4 rounded shadow">
-                    <p>
-                      <strong>Motivo:</strong> {req.reason}
-                    </p>
-                    <p>
-                      <strong>Estado:</strong> {req.status}
-                    </p>
-                    <p>
-                      <strong>Fecha solicitado:</strong>{" "}
-                      {new Date(req.created_at).toLocaleString("es-PA", {
-                        timeZone: "America/Panama",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        day: "2-digit",
-                        month: "2-digit",
-                        year: "numeric",
-                      })}
-                    </p>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </>
+            <div className="flex justify-between mt-4">
+              <Link
+                to="/requestform"
+                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+              >
+                Solicitar Certificado
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+              >
+                Cerrar sesión
+              </button>
+            </div>
+          </div>
         ) : (
-          <p className="text-center">Cargando perfil...</p>
+          <p>Cargando datos del usuario...</p>
+        )}
+
+        <hr className="my-6" />
+
+        <h2 className="text-xl font-semibold mb-4">Mis Solicitudes</h2>
+
+        {requests.length === 0 ? (
+          <p>No has enviado ninguna solicitud aún.</p>
+        ) : (
+          <table className="w-full border-collapse border">
+            <thead>
+              <tr className="bg-gray-200">
+                <th className="border px-4 py-2">Motivo</th>
+                <th className="border px-4 py-2">Estado</th>
+                <th className="border px-4 py-2">Fecha solicitado</th>
+                <th className="border px-4 py-2">Certificado</th>
+              </tr>
+            </thead>
+            <tbody>
+              {requests.map((req) => (
+                <tr key={req.id}>
+                  <td className="border px-4 py-2">{req.reason}</td>
+                  <td className="border px-4 py-2">{req.status}</td>
+                  <td className="border px-4 py-2">
+                    {new Date(req.created_at).toLocaleString("es-PA", {
+                      timeZone: "America/Panama",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      day: "2-digit",
+                      month: "2-digit",
+                      year: "numeric",
+                    })}
+                  </td>
+                  <td className="border px-4 py-2">
+                    {req.status === "Emitido" && req.certificate_url ? (
+                      <a
+                        href={`http://localhost:3000/${req.certificate_url}`}
+                        download
+                      >
+                        Descargar
+                      </a>
+                    ) : (
+                      "-"
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         )}
       </div>
     </div>

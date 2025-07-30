@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import API from "../api/axios";
 
 const RequestForm = () => {
@@ -14,6 +15,7 @@ const RequestForm = () => {
 
   const [message, setMessage] = useState("");
   const [reason, setReason] = useState("");
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value, type, files } = e.target;
@@ -43,13 +45,21 @@ const RequestForm = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-      console.log(response);
 
+      console.log(response);
       setMessage("Solicitud enviada con éxito.");
+
+      setTimeout(() => {
+        navigate("/profile");
+      }, 2000);
     } catch (error) {
       console.error("Error al enviar solicitud:", error);
       setMessage("Ocurrió un error al enviar la solicitud.");
     }
+  };
+
+  const handleBack = () => {
+    navigate("/profile");
   };
 
   return (
@@ -118,6 +128,7 @@ const RequestForm = () => {
           <option value="Femenino">Femenino</option>
           <option value="Otro">Otro</option>
         </select>
+
         <div>
           <label className="block text-sm font-medium text-gray-700">
             Motivo de la solicitud
@@ -127,8 +138,10 @@ const RequestForm = () => {
             onChange={(e) => setReason(e.target.value)}
             className="mt-1 block w-full border border-gray-300 rounded px-3 py-2 shadow-sm"
             rows={3}
+            required
           />
         </div>
+
         <input
           type="file"
           name="file"
@@ -144,9 +157,18 @@ const RequestForm = () => {
         >
           Enviar solicitud
         </button>
+
+        <button
+          type="button"
+          onClick={handleBack}
+          className="w-full bg-gray-300 text-gray-800 py-2 px-4 rounded hover:bg-gray-400 transition"
+        >
+          Volver
+        </button>
       </form>
     </div>
   );
 };
 
 export default RequestForm;
+

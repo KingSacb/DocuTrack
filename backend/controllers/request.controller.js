@@ -39,7 +39,66 @@ export const getUserRequests = async (req, res) => {
   }
 };
 
+export const getAllRequests = async (req, res) => {
+  try {
+    const result = await db.query(
+      "SELECT r.*, u.email FROM requests r JOIN users u ON r.user_id = u.uid ORDER BY r.created_at DESC"
+    );
+    return res.json({ ok: true, requests: result.rows });
+  } catch (error) {
+    console.error("Error al obtener todas las solicitudes:", error);
+    return res.status(500).json({ msg: "Error al obtener todas las solicitudes" });
+  }
+};
+
+const updateRequestStatus = async (req, res) => {
+  const { status } = req.body;
+  const { id } = req.params;
+
+  if (!status) {
+    return res.status(400).json({ msg: "Estado requerido" });
+  }
+
+  try {
+    await db.query("UPDATE requests SET status = $1 WHERE id = $2", [status, id]);
+    return res.json({ msg: "Estado actualizado correctamente" });
+  } catch (error) {
+    console.error("Error al actualizar estado:", error);
+    res.status(500).json({ msg: "Error al actualizar estado" });
+  }
+};
+
+
+const uploadCertificate = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const file = req.file;
+
+    if (!file) {
+      return res.status(400).json({ msg: "Archivo PDF requerido" });
+    }
+
+    const filePath = file.path;
+
+    await db.query(
+      "UPDATE requests SET certificate_url = $1 WHERE id = $2",
+      [filePath, id]
+    );
+
+    res.json({ ok: true, msg: "Certificado cargado exitosamente" });
+  } catch (error) {
+    console.error("Error al subir certificado:", error);
+    res.status(500).json({ msg: "Error en el servidor" });
+  }
+};
+
+
+
+
 export const RequestController = {
   createRequest,
   getUserRequests,
+  getAllRequests,
+  updateRequestStatus,
+  uploadCertificate,
 };
